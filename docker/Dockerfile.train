@@ -1,0 +1,28 @@
+FROM tensorflow/tensorflow:latest-gpu
+ENV DEBIAN_FRONTEND=noninteractive
+    
+# Adding Certifcate to access internet from within the container
+RUN mkdir /cert
+COPY cert/z-root.pem /cert/z-root.pem
+ENV REQUESTS_CA_BUNDLE=/cert/z-root.pem
+ENV SSL_CERT_FILE=/cert/z-root.pem
+RUN mkdir /usr/local/share/ca-certificates/corp
+RUN cp /cert/z-root.pem /usr/local/share/ca-certificates/corp/z-root.crt
+RUN chmod 644 /usr/local/share/ca-certificates/corp/z-root.crt
+RUN update-ca-certificates
+
+RUN apt-get update && apt-get install -y  \
+    git \
+    vim \
+    wget \
+    make \
+    pkg-config \
+    build-essential \
+    python-opencv
+
+# Setting Python environment and installing required pacakges
+ADD requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
+
+WORKDIR /work
+CMD ["bash"]
